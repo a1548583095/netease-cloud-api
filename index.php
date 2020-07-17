@@ -105,9 +105,9 @@ class API{
         $playlist = $this->recommend();
         $ids = array();
         $count=0;
-        for ($i = 0; sizeof($ids) < 310; $i++) {
+ for ($i = 0; sizeof($ids) < 310; $i++) {
         	$songid = $this->getsongid($playlist[rand(0,sizeof($playlist)-1)]);
-        	for ($k=0;sizeof($ids) < 310&&$k<sizeof($songid);$k++) {
+ for ($k=0;sizeof($ids) < 310&&$k<sizeof($songid);$k++) {
         	
         	$ids[$count]["action"]="play";
         	$ids[$count]["json"]["download"] =0 ;
@@ -120,6 +120,30 @@ class API{
      		$count++;
     	    }
         }
+        $data =json_encode($ids);
+        $url = "http://music.163.com/weapi/feedback/weblog";
+        $this->curl($url,$this->prepare(array("logs"=>$data)));
+        return '{"code":200,"count":'.$count.'}';
+    }
+    public function listen($id,$time){
+        $ids = array();
+        $count=0;
+        $t=1;
+    	$songid = $this->getsongid($id);
+    	while($t <= $time){
+    	    foreach ($songid as $index => $trackId) {
+    			$ids[$count]["action"]="play";
+            	$ids[$count]["json"]["download"] =0 ;
+            	$ids[$count]["json"]["end"] ="playend"; 
+         		$ids[$count]["json"]["id"] = $trackId["id"];
+         		$ids[$count]["json"]["sourceId"] ="";
+         		$ids[$count]["json"]["time"] = 240;
+         		$ids[$count]["json"]["type"] ="song";
+         		$ids[$count]["json"]["wifi"] =0;
+         		$count++;
+    		}
+    		$t++;
+    	}
         $data =json_encode($ids);
         $url = "http://music.163.com/weapi/feedback/weblog";
         $this->curl($url,$this->prepare(array("logs"=>$data)));
@@ -145,7 +169,7 @@ class API{
     public function daka(){
         $playlist = $this->recommend();
         $ids = array();
-        for ($i = 0; sizeof($ids) < 300; $i++) {
+ for ($i = 0; sizeof($ids) < 300; $i++) {
         	$songid = $this->playlist($playlist[rand(0,sizeof($playlist))]);
         	foreach ($songid as $id) {
      		$ids[] = $id;
@@ -228,5 +252,6 @@ elseif($_REQUEST["do"]=="sign"){echo $api->sign();}
 elseif($_REQUEST["do"]=="daka"){echo $api->daka_new();}
 elseif($_REQUEST["do"]=="check"){echo $api->follow();}
 elseif($_REQUEST["do"]=="detail"){echo $api->detail($_REQUEST["uid"]);}
+elseif($_REQUEST["do"]=="listen"){echo $api->listen($_REQUEST["id"],$_REQUEST["time"]);}
 else{echo $api->index();}
 ?>
